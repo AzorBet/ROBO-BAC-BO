@@ -1,0 +1,69 @@
+import { useState } from "react";
+
+const options = ["P", "B", "T"];
+
+export default function BacBoSignalBot() {
+  const [history, setHistory] = useState([]);
+  const [signal, setSignal] = useState("");
+
+  const generateResult = () => {
+    const weights = [0.48, 0.48, 0.04];
+    const rand = Math.random();
+    let acc = 0;
+    let result = "";
+    for (let i = 0; i < options.length; i++) {
+      acc += weights[i];
+      if (rand <= acc) {
+        result = options[i];
+        break;
+      }
+    }
+    const newHistory = [...history, result];
+    setHistory(newHistory);
+    checkSignal(newHistory);
+  };
+
+  const checkSignal = (hist) => {
+    if (hist.length < 3) {
+      setSignal("Sem sinal ainda...");
+      return;
+    }
+    const last = hist.slice(-3);
+    if (last.every((val) => val === last[0])) {
+      const invert =
+        last[0] === "P" ? "B" : last[0] === "B" ? "P" : "P ou B";
+      setSignal(`🔔 SINAL: Apostar contra '${last[0]}' → Aposte em '${invert}'`);
+      playSound();
+    } else {
+      setSignal("Sem sinal no momento.");
+    }
+  };
+
+  const playSound = () => {
+    const audio = new Audio(
+      "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
+    );
+    audio.play();
+  };
+
+  return (
+    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center p-4">
+      <h1 className="text-3xl font-bold mb-4">Robô de Sinais Bac Bo</h1>
+
+      <button
+        onClick={generateResult}
+        className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-2xl shadow mb-4"
+      >
+        Gerar Resultado
+      </button>
+
+      <div className="text-lg mb-2">
+        Histórico: {history.slice(-10).join(" - ") || "Nenhum resultado ainda."}
+      </div>
+
+      <div className="text-yellow-400 text-xl font-semibold text-center">
+        {signal}
+      </div>
+    </div>
+  );
+}
